@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instant REST</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Left Sidebar - History & Collections -->
+  <aside class="history-sidebar">
+    <div class="sidebar-header">
+      <div class="tab-switcher">
+        <button id="historyTab" class="sidebar-tab active" data-tab="history">History</button>
+        <button id="collectionsTab" class="sidebar-tab" data-tab="collections">Collections</button>
+      </div>
+    </div>
+    
+    <!-- Search Input -->
+    <div class="sidebar-search">
+      <input type="text" id="sidebarSearch" class="sidebar-search-input" placeholder="Search...">
+    </div>
+    
+    <!-- History View -->
+    <div id="historyView" class="sidebar-view active">
+      <div class="sidebar-actions">
+        <button id="clearHistoryBtn" class="clear-history-btn" title="Clear all history">Clear All</button>
+      </div>
+      <div id="historyList" class="history-list">
+        <!-- History items will be rendered here -->
+      </div>
+    </div>
+    
+    <!-- Collections View -->
+    <div id="collectionsView" class="sidebar-view">
+      <div class="sidebar-actions">
+        <button id="newCollectionBtn" class="new-collection-btn" title="Create new collection">+ New Collection</button>
+        <label for="importCollectionFile" class="import-collection-btn" title="Import collection from JSON">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          Import
+        </label>
+        <input type="file" id="importCollectionFile" accept=".json" style="display: none;">
+      </div>
+      <div id="collectionsList" class="collections-list">
+        <!-- Collection items will be rendered here -->
+      </div>
+    </div>
+  </aside>
+
+  <div class="container">
+    <header>
+      <div class="header-content">
+        <div class="header-left">
+          <h1>Instant REST</h1>
+          <p class="subtitle">Lightweight API Testing Tool</p>
+        </div>
+        <div class="header-right">
+          <button id="importCurlBtn" class="import-curl-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Import Curl
+          </button>
+        </div>
+      </div>
+    </header>
+    <div class="req-resp-wrapper">
+        <div class="request-section">
+        <div class="url-bar">
+            <select id="method" class="method-selector">
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="PATCH">PATCH</option>
+            <option value="DELETE">DELETE</option>
+            <option value="OPTIONS">OPTIONS</option>
+            <option value="HEAD">HEAD</option>
+            </select>
+            <input 
+            type="text" 
+            id="url" 
+            class="url-input" 
+            placeholder="Enter request URL (e.g., https://api.example.com/data)"
+            value="https://jsonplaceholder.typicode.com/posts/1"
+            />
+            <button id="sendBtn" class="send-btn">Send</button>
+            <button id="saveBtn" class="save-btn" title="Save to collection">Save</button>
+        </div>
+
+        <!-- Query Parameters Section -->
+        <div class="request-params-section">
+            <div class="request-params-toggle" id="paramsToggle">
+            <span>Query Parameters</span>
+            <span class="toggle-icon">▼</span>
+            </div>
+            <div id="paramsContent" class="request-params-content">
+            <div id="paramsContainer" class="params-container"></div>
+            </div>
+        </div>
+
+        <!-- Request Headers Section -->
+        <div class="request-headers-section">
+            <div class="request-headers-toggle" id="requestHeadersToggle">
+            <span>Request Headers</span>
+            <span class="toggle-icon">▼</span>
+            </div>
+            <div id="requestHeadersContent" class="request-headers-content">
+            <div class="common-headers">
+                <h4>Common Headers</h4>
+                <div class="common-headers-list">
+                <label class="common-header-item">
+                    <input type="checkbox" class="common-header-checkbox" data-header="Content-Type" data-value="application/json">
+                    <span>Content-Type: application/json</span>
+                </label>
+                <label class="common-header-item">
+                    <input type="checkbox" class="common-header-checkbox" data-header="Content-Type" data-value="application/x-www-form-urlencoded">
+                    <span>Content-Type: application/x-www-form-urlencoded</span>
+                </label>
+                <label class="common-header-item">
+                    <input type="checkbox" class="common-header-checkbox" data-header="Accept" data-value="application/json">
+                    <span>Accept: application/json</span>
+                </label>
+                <label class="common-header-item">
+                    <input type="checkbox" class="common-header-checkbox" data-header="Authorization" data-value="Bearer ">
+                    <span>Authorization: Bearer [token]</span>
+                </label>
+                <label class="common-header-item">
+                    <input type="checkbox" class="common-header-checkbox" data-header="User-Agent" data-value="Instant-REST/1.0">
+                    <span>User-Agent: Instant-REST/1.0</span>
+                </label>
+                <label class="common-header-item">
+                    <input type="checkbox" class="common-header-checkbox" data-header="Cache-Control" data-value="no-cache">
+                    <span>Cache-Control: no-cache</span>
+                </label>
+                </div>
+            </div>
+            <div class="custom-headers">
+                <h4>Custom Headers</h4>
+                <div id="headersContainer" class="headers-container"></div>
+            </div>
+            </div>
+        </div>
+
+        <!-- Request Body Section -->
+        <div class="request-body-section" id="requestBodySection" style="display: none;">
+            <div class="request-body-toggle" id="requestBodyToggle">
+            <span>Request Body</span>
+            <span class="toggle-icon">▼</span>
+            </div>
+            <div id="requestBodyContent" class="request-body-content">
+            <div class="body-type-tabs">
+                <button class="body-tab active" data-type="json">JSON</button>
+                <button class="body-tab" data-type="form">Form Data</button>
+                <button class="body-tab" data-type="urlencoded">URL Encoded</button>
+            </div>
+            <textarea id="requestBodyInput" class="request-body-textarea" placeholder='{"key": "value"}'></textarea>
+            <div id="bodyValidationError" class="validation-error"></div>
+            </div>
+        </div>
+        </div>
+
+        <div class="response-section">
+        <div class="response-header">
+            <h2>Response</h2>
+            <div class="response-meta">
+            <span id="statusCode" class="status-code"></span>
+            <span id="responseTime" class="response-time"></span>
+            </div>
+        </div>
+
+        <div id="responseContent" class="response-content">
+            <div class="empty-state">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+            <p>Enter a URL and click Send to get started</p>
+            </div>
+        </div>
+
+        <div id="headersSection" class="headers-section" style="display: none;">
+            <div class="headers-toggle" id="headersToggle">
+            <span>Response Headers</span>
+            <span class="toggle-icon">▼</span>
+            </div>
+            <div id="headersContent" class="headers-content"></div>
+        </div>
+
+        <div id="bodySection" class="body-section" style="display: none;">
+            <div class="section-header">
+            <h3>Body</h3>
+            <div class="body-controls">
+                <span id="bodyType" class="body-type"></span>
+                <button id="copyBtn" class="icon-btn" title="Copy response">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                </button>
+            </div>
+            </div>
+            <pre id="bodyContent" class="body-content"></pre>
+        </div>
+        </div>
+    </div>
+  </div>
+
+  <!-- Import Curl Modal -->
+  <div id="curlModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Import Curl Command</h2>
+        <button id="closeCurlModal" class="close-modal-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <textarea 
+          id="curlInput" 
+          class="curl-textarea" 
+          placeholder="Paste your curl command here...
+
+Example:
+curl -X POST https://api.example.com/data \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer token123' \
+  -d '{\"key\": \"value\"}'"></textarea>
+        <div id="curlError" class="curl-error"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelCurlBtn" class="modal-btn cancel-btn">Cancel</button>
+        <button id="importCurlSubmitBtn" class="modal-btn import-btn">Import</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Collection Picker Modal -->
+  <div id="collectionPickerModal" class="modal-overlay">
+    <div class="modal-content modal-small">
+      <div class="modal-header">
+        <h2>Save to Collection</h2>
+        <button id="closeCollectionPickerModal" class="close-modal-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="requestNameInput">Request Name:</label>
+          <input type="text" id="requestNameInput" class="form-input" placeholder="My Request">
+        </div>
+        <div class="form-group">
+          <label for="collectionSelect">Collection:</label>
+          <select id="collectionSelect" class="form-select">
+            <option value="">Select a collection...</option>
+          </select>
+        </div>
+        <div id="collectionPickerError" class="form-error"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelCollectionPickerBtn" class="modal-btn cancel-btn">Cancel</button>
+        <button id="saveToCollectionBtn" class="modal-btn save-btn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Collection Modal -->
+  <div id="newCollectionModal" class="modal-overlay">
+    <div class="modal-content modal-small">
+      <div class="modal-header">
+        <h2>New Collection</h2>
+        <button id="closeNewCollectionModal" class="close-modal-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="collectionNameInput">Collection Name:</label>
+          <input type="text" id="collectionNameInput" class="form-input" placeholder="My Collection">
+        </div>
+        <div id="newCollectionError" class="form-error"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelNewCollectionBtn" class="modal-btn cancel-btn">Cancel</button>
+        <button id="createCollectionBtn" class="modal-btn save-btn">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
