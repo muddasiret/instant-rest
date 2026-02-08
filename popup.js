@@ -217,13 +217,13 @@ function createParamRow(key, value, index) {
   
   const keyInput = document.createElement('input');
   keyInput.type = 'text';
-  keyInput.placeholder = 'Parameter name';
+  keyInput.placeholder = 'Key';
   keyInput.value = key;
   keyInput.addEventListener('input', (e) => handleParamInput(index, 'key', e.target.value));
   
   const valueInput = document.createElement('input');
   valueInput.type = 'text';
-  valueInput.placeholder = 'Parameter value';
+  valueInput.placeholder = 'Value';
   valueInput.value = value;
   valueInput.addEventListener('input', (e) => handleParamInput(index, 'value', e.target.value));
   
