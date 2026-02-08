@@ -972,7 +972,7 @@ header {
 }
 
 .body-content {
-  background-color: #f8f9fa;
+  background-color: #fdfdfd;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
   padding: 16px;
@@ -988,16 +988,21 @@ header {
 
 /* JSON Syntax Highlighting */
 .json-key {
-  color: #881391;
+  color: #935104;
   font-weight: 600;
 }
 
 .json-string {
-  color: #1a1aa6;
+  color: #0353a3;
+}
+
+.json-url {
+  color: #0353a3;
+  font-style: italic;
 }
 
 .json-number {
-  color: #1c00cf;
+  color: #126525;
 }
 
 .json-boolean {
@@ -1006,8 +1011,8 @@ header {
 }
 
 .json-null {
-  color: #808080;
-  font-style: italic;
+  color: #1f1f1f;
+  font-weight: 900;
 }
 
 /* Scrollbar Styling */

@@ -667,7 +667,13 @@ function syntaxHighlightJSON(json) {
       if (/:$/.test(match)) {
         cls = 'json-key';
       } else {
-        cls = 'json-string';
+        // Check if the string value is a URL
+        const stringValue = match.slice(1, -1); // Remove quotes
+        if (/^https?:\/\//.test(stringValue)) {
+          cls = 'json-url';
+        } else {
+          cls = 'json-string';
+        }
       }
     } else if (/true|false/.test(match)) {
       cls = 'json-boolean';
