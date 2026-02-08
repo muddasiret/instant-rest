@@ -908,6 +908,16 @@ async function saveHistory() {
 
 // Add Request to History
 function addToHistory(method, url, name = null) {
+  // Check if same URL + method already exists
+  const existingIndex = requestHistory.findIndex(
+    item => item.url === url && item.method === method
+  );
+  
+  // If exists, remove it (we'll add the updated version at the top)
+  if (existingIndex !== -1) {
+    requestHistory.splice(existingIndex, 1);
+  }
+  
   const timestamp = Date.now();
   const historyItem = {
     id: timestamp,
