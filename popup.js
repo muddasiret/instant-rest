@@ -136,6 +136,12 @@ newCollectionModal.addEventListener('click', (e) => {
 });
 importCollectionFile.addEventListener('change', handleImportCollectionFile);
 
+// Event delegation for dynamically generated elements
+collectionsList.addEventListener('click', handleCollectionsClick);
+historyList.addEventListener('click', handleHistoryClick);
+collectionsList.addEventListener('blur', handleCollectionNameBlur, true);
+collectionsList.addEventListener('keypress', handleCollectionNameKeypress);
+
 // Initialize
 initialize();
 
@@ -1033,6 +1039,7 @@ function loadRequestFromHistory(item) {
   // Set params
   queryParams = [...item.params];
   renderParams();
+  updateUrlFromParams();
   
   // Set body
   if (item.body) {
@@ -1149,7 +1156,7 @@ function renderCollections() {
       <div class="collection-item ${collection.expanded ? 'expanded' : ''}" data-id="${collection.id}">
         <div class="collection-header">
           <div class="collection-title">
-            <button class="collection-toggle" onclick="toggleCollection('${collection.id}')">
+            <button class="collection-toggle" data-collection-id="${collection.id}">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="9 18 15 12 9 6"></polyline>
               </svg>
@@ -1161,20 +1168,19 @@ function renderCollections() {
               type="text" 
               class="collection-name-input" 
               value="${escapeHtml(collection.name)}"
-              onblur="renameCollection('${collection.id}', this.value)"
-              onkeypress="if(event.key==='Enter') this.blur()"
+              data-collection-id="${collection.id}"
             >
             <span class="request-count">(${collection.requests.length})</span>
           </div>
           <div class="collection-actions">
-            <button class="icon-btn-small" onclick="exportCollection('${collection.id}')" title="Export collection">
+            <button class="icon-btn-small export-collection-btn" data-collection-id="${collection.id}" title="Export collection">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="7 10 12 15 17 10"></polyline>
                 <line x1="12" y1="15" x2="12" y2="3"></line>
               </svg>
             </button>
-            <button class="icon-btn-small delete-btn" onclick="deleteCollection('${collection.id}')" title="Delete collection">
+            <button class="icon-btn-small delete-btn delete-collection-btn" data-collection-id="${collection.id}" title="Delete collection">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="3 6 5 6 21 6"></polyline>
                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -1184,13 +1190,13 @@ function renderCollections() {
         </div>
         <div class="collection-requests">
           ${filteredRequests.map(request => `
-            <div class="collection-request-item" onclick="loadSavedRequest('${collection.id}', '${request.id}')">
+            <div class="collection-request-item" data-collection-id="${collection.id}" data-request-id="${request.id}">
               <div class="request-info">
                 <span class="method-badge method-${request.method.toLowerCase()}">${request.method}</span>
                 <span class="request-name">${escapeHtml(request.name)}</span>
               </div>
               <div class="request-url">${escapeHtml(request.url)}</div>
-              <button class="icon-btn-small delete-btn" onclick="event.stopPropagation(); deleteRequestFromCollection('${collection.id}', '${request.id}')" title="Delete request">
+              <button class="icon-btn-small delete-btn delete-request-btn" data-collection-id="${collection.id}" data-request-id="${request.id}" title="Delete request">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -1335,6 +1341,7 @@ window.loadSavedRequest = function(collectionId, requestId) {
   
   queryParams = [...request.params];
   renderParams();
+  updateUrlFromParams();
   
   if (request.body) {
     requestBodyInput.value = request.body;
@@ -1630,13 +1637,13 @@ renderHistory = function() {
     : requestHistory;
   
   historyList.innerHTML = filteredHistory.map(item => `
-    <div class="history-item" onclick="loadRequestFromHistory(${JSON.stringify(item).replace(/"/g, '&quot;')})">
+    <div class="history-item" data-history-item='${JSON.stringify(item)}'>
       <div class="history-header">
         <span class="method-badge method-${item.method.toLowerCase()}">${item.method}</span>
         <span class="history-time">${getRelativeTime(item.timestamp)}</span>
       </div>
       <div class="history-url">${escapeHtml(item.url)}</div>
-      <button class="delete-history-btn" onclick="event.stopPropagation(); deleteHistoryItem('${item.id}')" title="Delete">
+      <button class="delete-history-btn" data-history-id="${item.id}" title="Delete">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="18" y1="6" x2="6" y2="18"></line>
           <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -1651,6 +1658,94 @@ function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+
+// Event delegation handler for collections list
+function handleCollectionsClick(e) {
+  const target = e.target.closest('button, .collection-request-item');
+  if (!target) return;
+  
+  // Toggle collection
+  if (target.classList.contains('collection-toggle')) {
+    const collectionId = target.dataset.collectionId;
+    if (collectionId) toggleCollection(collectionId);
+    return;
+  }
+  
+  // Export collection
+  if (target.classList.contains('export-collection-btn')) {
+    const collectionId = target.dataset.collectionId;
+    if (collectionId) exportCollection(collectionId);
+    return;
+  }
+  
+  // Delete collection
+  if (target.classList.contains('delete-collection-btn')) {
+    const collectionId = target.dataset.collectionId;
+    if (collectionId) deleteCollection(collectionId);
+    return;
+  }
+  
+  // Delete request from collection
+  if (target.classList.contains('delete-request-btn')) {
+    e.stopPropagation();
+    const collectionId = target.dataset.collectionId;
+    const requestId = target.dataset.requestId;
+    if (collectionId && requestId) deleteRequestFromCollection(collectionId, requestId);
+    return;
+  }
+  
+  // Load saved request
+  if (target.classList.contains('collection-request-item')) {
+    const collectionId = target.dataset.collectionId;
+    const requestId = target.dataset.requestId;
+    if (collectionId && requestId) loadSavedRequest(collectionId, requestId);
+    return;
+  }
+}
+
+// Event delegation handler for history list
+function handleHistoryClick(e) {
+  const target = e.target.closest('button, .history-item');
+  if (!target) return;
+  
+  // Delete history item
+  if (target.classList.contains('delete-history-btn')) {
+    e.stopPropagation();
+    const historyId = target.dataset.historyId;
+    if (historyId) deleteHistoryItem(historyId);
+    return;
+  }
+  
+  // Load history item
+  if (target.classList.contains('history-item')) {
+    const itemData = target.dataset.historyItem;
+    if (itemData) {
+      try {
+        const item = JSON.parse(itemData);
+        loadRequestFromHistory(item);
+      } catch (e) {
+        console.error('Failed to parse history item:', e);
+      }
+    }
+    return;
+  }
+}
+
+// Event delegation handler for collection name blur
+function handleCollectionNameBlur(e) {
+  if (e.target.classList.contains('collection-name-input')) {
+    const collectionId = e.target.dataset.collectionId;
+    const newName = e.target.value;
+    if (collectionId) renameCollection(collectionId, newName);
+  }
+}
+
+// Event delegation handler for collection name keypress
+function handleCollectionNameKeypress(e) {
+  if (e.target.classList.contains('collection-name-input') && e.key === 'Enter') {
+    e.target.blur();
+  }
 }
 
 // Add import collection button to header (optional enhancement)
