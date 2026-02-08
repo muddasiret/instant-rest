@@ -1,8 +1,13 @@
 {
   "name": "Instant REST",
-  "description": "Instant API testing tool",
+  "description": "Lightweight REST API testing tool with history, collections, and curl import support",
   "version": "1.0",
   "manifest_version": 3,
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
   "action": {
     "default_icon": "icon.png"
   },
