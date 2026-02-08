@@ -753,7 +753,6 @@ header {
   top: 0;
   padding: 16px 20px;
   background-color: #ffffff;
-  border-bottom: 2px solid #e0e0e0;
   z-index: 10;
   /* overflow-y: auto; */
   /* max-height: 650px; */
@@ -1053,7 +1052,7 @@ header {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 .sidebar-tab:hover {
