@@ -25,7 +25,7 @@ body {
 
 /* Phase 3: History Sidebar */
 .history-sidebar {
-  width: 250px;
+  width: 320px;
   background-color: #f8f9fa;
   border-right: 1px solid #e0e0e0;
   height: 100vh;
@@ -165,6 +165,8 @@ body {
   opacity: 0;
   transition: all 0.2s;
   flex-shrink: 0;
+  background-color: #fee;
+
 }
 
 .history-item:hover .delete-history-btn {
@@ -389,7 +391,7 @@ header {
 }
 
 .method-selector {
-  padding: 8px 12px;
+  padding: 8px;
   border: 1px solid #d0d0d0;
   border-radius: 4px;
   background-color: white;
@@ -397,18 +399,57 @@ header {
   font-weight: 600;
   color: #667eea;
   cursor: pointer;
-  min-width: 80px;
+  width: 100px;
   outline: none;
   transition: all 0.2s;
+  text-align: center;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23666' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 28px;
+}
+
+/* Method-specific colors */
+.method-selector.method-get {
+  color: #155724;
+  background-color: #d4edda;
+  border-color: #155724;
+}
+
+.method-selector.method-post {
+  color: #004085;
+  background-color: #cce5ff;
+  border-color: #004085;
+}
+
+.method-selector.method-put {
+  color: #856404;
+  background-color: #fff3cd;
+  border-color: #856404;
+}
+
+.method-selector.method-patch {
+  color: #5a2d82;
+  background-color: #e7d4ff;
+  border-color: #5a2d82;
+}
+
+.method-selector.method-delete {
+  color: #721c24;
+  background-color: #f8d7da;
+  border-color: #721c24;
+}
+
+.method-selector.method-options,
+.method-selector.method-head {
+  color: #0c5460;
+  background-color: #d1ecf1;
+  border-color: #0c5460;
 }
 
 .method-selector:hover {
-  border-color: #667eea;
-}
-
-.method-selector:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  opacity: 0.9;
 }
 
 .url-input {
@@ -506,13 +547,13 @@ header {
 .param-row,
 .header-input-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 32px;
+  grid-template-columns: 24px 1fr 1fr 32px;
   gap: 8px;
   align-items: center;
 }
 
 .param-row input,
-.header-input-row input {
+.header-input-row input[type="text"] {
   padding: 6px 10px;
   border: 1px solid #d0d0d0;
   border-radius: 4px;
@@ -522,14 +563,31 @@ header {
 }
 
 .param-row input:focus,
-.header-input-row input:focus {
+.header-input-row input[type="text"]:focus {
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .param-row input::placeholder,
-.header-input-row input::placeholder {
+.header-input-row input[type="text"]::placeholder {
   color: #999;
+}
+
+.header-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #667eea;
+}
+
+.header-checkbox:disabled {
+  opacity: 0;
+  cursor: default;
+  pointer-events: none;
+}
+
+.disabled-header {
+  opacity: 0.6;
 }
 
 .delete-row-btn {
@@ -977,24 +1035,24 @@ header {
   flex: 1;
   padding: 8px 12px;
   background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
+  border: 1px solid green;
   color: #666;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
+  border-radius: 8px;
 }
 
 .sidebar-tab:hover {
-  color: #667eea;
-  background-color: #f0f3ff;
+  color: #155724;
+    background-color: #d4ecdb;
 }
 
 .sidebar-tab.active {
-  color: #667eea;
-  border-bottom-color: #667eea;
-  background-color: #f0f3ff;
+  color: #fff;
+  /* border-bottom-color: #667eea; */
+  background-color: #039c71;
 }
 
 /* Sidebar Search */
@@ -1040,7 +1098,7 @@ header {
 .new-collection-btn {
   flex: 1;
   padding: 8px 12px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #154538;
   border: none;
   border-radius: 4px;
   color: white;
@@ -1058,9 +1116,9 @@ header {
 .import-collection-btn {
   padding: 8px 12px;
   background: white;
-  border: 1px solid #667eea;
+  border: 1px solid #154538;
   border-radius: 4px;
-  color: #667eea;
+  color: #154538;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -1372,9 +1430,8 @@ header {
 .history-url {
   font-size: 11px;
   color: #666;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
 .delete-history-btn {
@@ -1389,6 +1446,8 @@ header {
   opacity: 0;
   transition: all 0.2s;
   border-radius: 3px;
+  background-color: #ffe6e6;
+  color: #dc3545;
 }
 
 .history-item:hover .delete-history-btn {
@@ -1396,6 +1455,6 @@ header {
 }
 
 .delete-history-btn:hover {
-  background-color: #ffe6e6;
+  background-color: #f2cece;
   color: #dc3545;
 }

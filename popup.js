@@ -145,19 +145,30 @@ collectionsList.addEventListener('keypress', handleCollectionNameKeypress);
 // Initialize
 initialize();
 
-function initialize() {
+async function initialize() {
   renderParams();
   renderHeaders();
   handleMethodChange();
-  loadHistory();
+  await loadHistory();
   loadCollections();
   loadTab();
+  
+  // Load the latest request from history if available
+  if (requestHistory.length > 0) {
+    loadRequestFromHistory(requestHistory[0]);
+  }
 }
 
 // Handle Method Change
 function handleMethodChange() {
   const method = methodSelect.value;
   const methodsWithBody = ['POST', 'PUT', 'PATCH', 'DELETE'];
+  
+  // Remove all method classes
+  methodSelect.className = 'method-selector';
+  
+  // Add method-specific class
+  methodSelect.classList.add(`method-${method.toLowerCase()}`);
   
   if (methodsWithBody.includes(method)) {
     requestBodySection.style.display = 'block';
@@ -303,7 +314,8 @@ function renderHeaders() {
   
   // Render existing headers
   customHeaders.forEach((header, index) => {
-    const row = createHeaderRow(header.key, header.value, index);
+    const enabled = header.enabled !== undefined ? header.enabled : true;
+    const row = createHeaderRow(header.key, header.value, index, enabled);
     headersContainer.appendChild(row);
   });
   
@@ -312,9 +324,17 @@ function renderHeaders() {
   headersContainer.appendChild(emptyRow);
 }
 
-function createHeaderRow(key, value, index) {
+function createHeaderRow(key, value, index, enabled = true) {
   const row = document.createElement('div');
   row.className = 'header-input-row';
+  
+  // Checkbox for enabling/disabling header
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.className = 'header-checkbox';
+  checkbox.checked = enabled;
+  checkbox.disabled = index === -1;
+  checkbox.addEventListener('change', (e) => toggleHeaderEnabled(index, e.target.checked));
   
   const keyInput = document.createElement('input');
   keyInput.type = 'text';
@@ -334,9 +354,17 @@ function createHeaderRow(key, value, index) {
   deleteBtn.disabled = index === -1;
   deleteBtn.addEventListener('click', () => deleteHeader(index));
   
+  row.appendChild(checkbox);
   row.appendChild(keyInput);
   row.appendChild(valueInput);
   row.appendChild(deleteBtn);
+  
+  // Apply disabled styling if header is disabled
+  if (!enabled && index !== -1) {
+    row.classList.add('disabled-header');
+    keyInput.style.opacity = '0.5';
+    valueInput.style.opacity = '0.5';
+  }
   
   return row;
 }
@@ -345,11 +373,11 @@ function handleHeaderInput(index, field, value) {
   if (index === -1) {
     // New row - add to headers if both key and value are not empty
     const allInputs = headersContainer.querySelectorAll('.header-input-row:last-child input');
-    const key = allInputs[0].value.trim();
-    const val = allInputs[1].value.trim();
+    const key = allInputs[1].value.trim();
+    const val = allInputs[2].value.trim();
     
     if (key || val) {
-      customHeaders.push({ key: key, value: val });
+      customHeaders.push({ key: key, value: val, enabled: true });
       renderHeaders();
     }
   } else {
@@ -365,6 +393,13 @@ function deleteHeader(index) {
   }
 }
 
+function toggleHeaderEnabled(index, enabled) {
+  if (index >= 0) {
+    customHeaders[index].enabled = enabled;
+    renderHeaders();
+  }
+}
+
 function handleCommonHeaderToggle(e) {
   const checkbox = e.target;
   const headerName = checkbox.dataset.header;
@@ -374,7 +409,7 @@ function handleCommonHeaderToggle(e) {
     // Add to custom headers if not already present
     const exists = customHeaders.some(h => h.key === headerName);
     if (!exists) {
-      customHeaders.push({ key: headerName, value: headerValue });
+      customHeaders.push({ key: headerName, value: headerValue, enabled: true });
       renderHeaders();
     }
   } else {
@@ -421,9 +456,10 @@ function validateRequestBody() {
 function buildHeadersObject() {
   const headers = {};
   
-  // Add custom headers
+  // Add custom headers (only enabled ones)
   customHeaders.forEach(header => {
-    if (header.key.trim()) {
+    const isEnabled = header.enabled !== undefined ? header.enabled : true;
+    if (header.key.trim() && isEnabled) {
       headers[header.key.trim()] = header.value;
     }
   });
@@ -529,6 +565,25 @@ function displayResponse(response) {
   // Show sections
   headersSection.style.display = 'block';
   bodySection.style.display = 'block';
+  
+  // Collapse request accordions
+  if (requestHeadersExpanded) {
+    requestHeadersExpanded = false;
+    requestHeadersContent.style.display = 'none';
+    requestHeadersToggle.querySelector('.toggle-icon').textContent = '▼';
+  }
+  
+  if (requestBodyExpanded) {
+    requestBodyExpanded = false;
+    requestBodyContent.style.display = 'none';
+    requestBodyToggle.querySelector('.toggle-icon').textContent = '▼';
+  }
+  
+  // Scroll to response section
+  const responseSection = document.querySelector('.response-section');
+  if (responseSection) {
+    responseSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 // Display Headers
@@ -1072,7 +1127,9 @@ function loadRequestFromHistory(item) {
 
 // Delete History Item
 function deleteHistoryItem(id) {
-  requestHistory = requestHistory.filter(item => item.id !== id);
+  // Convert string id to number for comparison
+  const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+  requestHistory = requestHistory.filter(item => item.id !== numericId);
   saveHistory();
   renderHistory();
 }
