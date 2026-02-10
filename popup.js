@@ -637,9 +637,13 @@ function displayBody(body, contentType) {
 function formatJSON(body) {
   try {
     const parsed = typeof body === 'string' ? JSON.parse(body) : body;
-    const formatted = JSON.stringify(parsed, null, 2);
-    bodyContent.innerHTML = syntaxHighlightJSON(formatted);
+    bodyContent.innerHTML = renderCollapsibleJSON(parsed, 0);
     bodyContent.className = 'body-content json';
+    
+    // Add event listeners for collapse/expand
+    bodyContent.querySelectorAll('.json-toggle').forEach(toggle => {
+      toggle.addEventListener('click', handleJSONToggle);
+    });
   } catch (e) {
     bodyContent.textContent = body;
     bodyContent.className = 'body-content';
@@ -682,6 +686,130 @@ function syntaxHighlightJSON(json) {
     }
     return '<span class="' + cls + '">' + match + '</span>';
   });
+}
+
+// Render Collapsible JSON
+function renderCollapsibleJSON(obj, indent = 0) {
+  const indentStr = '  '.repeat(indent);
+  const nextIndent = indent + 1;
+  const nextIndentStr = '  '.repeat(nextIndent);
+  
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+  
+  function renderValue(value, currentIndent) {
+    if (value === null) {
+      return '<span class="json-null">null</span>';
+    }
+    if (typeof value === 'boolean') {
+      return '<span class="json-boolean">' + value + '</span>';
+    }
+    if (typeof value === 'number') {
+      return '<span class="json-number">' + value + '</span>';
+    }
+    if (typeof value === 'string') {
+      const escaped = escapeHtml(value);
+      const cls = /^https?:\/\//.test(value) ? 'json-url' : 'json-string';
+      return '<span class="' + cls + '">"' + escaped + '"</span>';
+    }
+    if (Array.isArray(value)) {
+      return renderArray(value, currentIndent);
+    }
+    if (typeof value === 'object') {
+      return renderObject(value, currentIndent);
+    }
+    return escapeHtml(String(value));
+  }
+  
+  function renderObject(obj, currentIndent) {
+    const entries = Object.entries(obj);
+    if (entries.length === 0) {
+      return '{}';
+    }
+    
+    const id = 'json-' + Math.random().toString(36).substr(2, 9);
+    const currentIndentStr = '  '.repeat(currentIndent);
+    const nextIndentStr = '  '.repeat(currentIndent + 1);
+    
+    let html = '<span class="json-toggle" data-target="' + id + '">\u25bc</span>{\n';
+    html += '<div class="json-collapsible" id="' + id + '">';
+    
+    entries.forEach(function(entry, index) {
+      const key = entry[0];
+      const value = entry[1];
+      html += nextIndentStr;
+      html += '<span class="json-key">"' + escapeHtml(key) + '"</span>: ';
+      html += renderValue(value, currentIndent + 1);
+      if (index < entries.length - 1) {
+        html += ',';
+      }
+      html += '\n';
+    });
+    
+    html += '</div>';
+    html += '<div class="json-collapsed" id="' + id + '-collapsed" style="display: none;">...</div>';
+    html += currentIndentStr + '}';
+    
+    return html;
+  }
+  
+  function renderArray(arr, currentIndent) {
+    if (arr.length === 0) {
+      return '[]';
+    }
+    
+    const id = 'json-' + Math.random().toString(36).substr(2, 9);
+    const currentIndentStr = '  '.repeat(currentIndent);
+    const nextIndentStr = '  '.repeat(currentIndent + 1);
+    
+    let html = '<span class="json-toggle" data-target="' + id + '">\u25bc</span>[\n';
+    html += '<div class="json-collapsible" id="' + id + '">';
+    
+    arr.forEach((value, index) => {
+      html += nextIndentStr;
+      html += renderValue(value, currentIndent + 1);
+      if (index < arr.length - 1) {
+        html += ',';
+      }
+      html += '\n';
+    });
+    
+    html += '</div>';
+    html += '<div class="json-collapsed" id="' + id + '-collapsed" style="display: none;">...</div>';
+    html += currentIndentStr + ']';
+    
+    return html;
+  }
+  
+  return renderValue(obj, indent);
+}
+
+// Handle JSON Toggle (Expand/Collapse)
+function handleJSONToggle(e) {
+  e.stopPropagation();
+  const toggle = e.target;
+  const targetId = toggle.getAttribute('data-target');
+  const content = document.getElementById(targetId);
+  const collapsed = document.getElementById(targetId + '-collapsed');
+  
+  if (content && collapsed) {
+    if (content.style.display === 'none') {
+      // Expand
+      content.style.display = 'block';
+      collapsed.style.display = 'none';
+      toggle.textContent = '▼';
+    } else {
+      // Collapse
+      content.style.display = 'none';
+      collapsed.style.display = 'inline';
+      toggle.textContent = '▶';
+    }
+  }
 }
 
 // Get Status Code Class

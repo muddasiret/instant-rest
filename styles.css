@@ -1014,6 +1014,42 @@ header {
   font-weight: 900;
 }
 
+/* JSON Collapsible Arrows */
+.json-toggle {
+  display: inline-block;
+  cursor: pointer;
+  user-select: none;
+  color: #666;
+  font-size: 10px;
+  margin-right: 4px;
+  width: 12px;
+  text-align: center;
+  transition: transform 0.2s ease;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.body-content:hover .json-toggle,
+.json-toggle:hover {
+  opacity: 1;
+}
+
+.json-toggle:hover {
+  color: #333;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 2px;
+}
+
+.json-collapsible {
+  display: block;
+}
+
+.json-collapsed {
+  display: none;
+  color: #999;
+  font-style: italic;
+}
+
 /* Scrollbar Styling */
 ::-webkit-scrollbar {
   width: 8px;
